@@ -1,0 +1,81 @@
+---
+title: "01-practice-546"
+author: "Hannah Nowers"
+date: "2026-01-12"
+output: pdf_document
+---
+
+```{bash, Dowloading Data}
+
+cd ../data #putting it into my data directory
+
+# Wrong Files: 
+    #curl -LO https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.13.0+-x64-macosx.tar.gz
+    # curl tells it to get the link, -L, -O tells it to save the file with the original final name
+   
+    #tar -xf ncbi-blast-2.13.0+-x64-macosx.tar.gz #now I need to extract the file, -x -> pull the file from the     archive, -f means file. Taking the contents of what I downloaded with curl and putting into my current         directory which is my data directory
+
+rm ncbi-blast-2.13.0+-x64-macosx.tar.gz #first file was a bad file, removing the directory and redownloading
+
+curl -LO https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.17.0+-x64-macosx.tar.gz #new link
+
+tar -xf ncbi-blast-2.17.0+-x64-macosx.tar.gz  #now I need to extract the file, -x -> pull the file from the archive, -f means file. Taking the contents of what I downloaded with curl and putting into my current directory which is my data directory
+
+ls -lh
+```
+```{bash, Making Blast Database}
+# Data from https://www.uniprot.org/help/downloads
+
+pwd #printing working directory to see where I am, need to be in data
+
+cd ../data #went up a directory and into my data directory
+
+pwd #made sure I was in my data directory
+
+curl -O https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz #downloading data from website, file is zipped, 
+
+mv uniprot_sprot.fasta.gz uniprot_sprot_r2023_01.fasta.gz # I would know like to mv(move/rename) my current file,uniprot_sprot.fasta.gz  to uniprot_sprot_r2023_01.fasta.gz, This might be the wrong release name. I made sure I downloaded the new file from the website but I am copying the name from the 546 assignment 1 instructions so I can follow the code
+
+gunzip -k uniprot_sprot_r2023_01.fasta.gz #now i need to unzip my compressed file that I downloaded. -k tell the computer to keep the original compressed file 
+
+ls ../data #checking which files are in my data directory
+
+cd ~/Github/Github-Practice #moving to my Github-Practice directory
+
+mkdir -p blastdb #need to make a folder for my blast database to go into, I've named it blastdb and the -p makes sure the command will continue even if the file already exists
+
+cd Data #moving to my data directory
+pwd # checking that I am in my data directory
+
+~/GitHub/Github-Practice/Data/ncbi-blast-2.17.0+/bin/makeblastdb \
+-in ~/GitHub/Github-Practice/Data/uniprot_sprot_r2023_01.fasta \
+-dbtype prot \
+-out ~/GitHub/Github-Practice/blastdb/uniprot_sprot_r2023_01 # first line: telling it to look at the program in my Data folder, second line: telling it to input the FASTA file into the Data folder, third line: protein database, fourth line: save the BLAST database into my blastdb folder that I made earlier
+```
+
+```{bash, Getting the Query Sequence}
+
+curl https://eagle.fish.washington.edu/cnidarian/Ab_4denovo_CLC6_a.fa \
+-k \
+> ../Data/Ab_4denovo_CLC6_a.fa #first line: downloading the query sequence from website, Second line: -k tells the computer to trust the source and download with verification errors, Third line: > tells the computer to save the downloaded content as a file and not print it in terminal ../data/ <- means go up one directory from the current folder and into my Data folder
+
+head ../Data/Ab_4denovo_CLC6_a.fa #asking it to print the first 10 lines from the folder, lines starting with (>) are sequence headers
+echo "How many sequences are there?" #echo prints the follow line into terminal, this labels the ouput so you know what the number refers to
+grep -c ">" ../Data/Ab_4denovo_CLC6_a.fa # grep-> searches for patterns in a file, -c -> counts the number of lines that match, ">" looks for the > characters(FASTA headings), Ab_4denovo_CLC6_a.fa is telling it which files to search. Overall, looking for the number of lines that start with > which tells it the number of sequences
+```
+
+```{bash, Running Bash}
+#bin -> is the folder that contains the blast executables
+
+~/GitHub/Github-Practice/Data/ncbi-blast-2.17.0+/bin/blastx \
+-query ../data/Ab_4denovo_CLC6_a.fa \
+-db ../blastdb/uniprot_sprot_r2023_01 \
+-out ../output/Ab_4-uniprot_blastx.tab \
+-evalue 1E-20 \
+-num_threads 20 \
+-max_target_seqs 1 \
+-outfmt 6 #line 1: tells it what version of Blast, what bin, and what executable I want to use, blastx tales the DNA/RNA sequences translates them into proteins and searches the protein database, second line: -query specifies the sequence I want to search the trailing bit just tell it where the file is, third line: tell it what database to search against trailing bit tell is where the database is, fourth line: tells plast where to save the results, fifth line: -evalue -> sets the expectation value cutoff, means BLAST with only report hit thats have a 1E-20 probability of occuring, sixth line: -num_threads -> tells the computer how many CPU threads to use, run 20 threads in parallel which speeds up searching, seventh line: -max_target_seqs: limits how many top hits BLAST reports for each query, 1 -> only the best hit per query sequence will be saved, eighth line: -outfmt sets the ouput format, 6= table format
+
+head -2 ../output/Ab_4-uniprot_blastx.tab
+wc -l ../output/Ab_4-uniprot_blastx.tab
+```
