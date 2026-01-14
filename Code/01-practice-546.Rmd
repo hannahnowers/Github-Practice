@@ -103,7 +103,7 @@ wc -l ../Data/uniprot_table_r2023_01.tab # checking the word count on the first 
 
 ```
 
-```{r, Installing packages}
+```{r, Installing packages and creating table}
 
 install.packages("tidyverse")
 install.packages("kableExtra")
@@ -117,7 +117,6 @@ str(spgo)
 
 names(spgo) # Seeing exactly what R has named the columns
 
-# Code Below this line is producing error because columns Gene.ONtology..biological.process.' doesn't exist
 kbl(
 head(
   left_join(bltabl, spgo,  by = c("V3" = "Entry")) %>%
