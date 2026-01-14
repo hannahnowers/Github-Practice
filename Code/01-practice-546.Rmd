@@ -117,7 +117,6 @@ str(spgo)
 
 names(spgo) # Seeing exactly what R has named the columns
 
-# Code Below this line is producing error because columns Gene.ONtology..biological.process.' doesn't exist
 kbl(
 head(
   left_join(bltabl, spgo,  by = c("V3" = "Entry")) %>%
